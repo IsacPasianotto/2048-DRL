@@ -94,13 +94,16 @@ def hist_agent_scores(scores_agents, names_agents, bins=10, alpha=0.3, density=T
     # get prettier histogram
     sns.despine()
 
-def plot_5_metrics(agent, smooth=True, n_ticks=30):
+def plot_5_metrics(agent, n_data=None, smooth=True, n_ticks=30):
     """ Plot the 5 metrics of the agent cumreward, duration, loss, score and max_tile.
 
     Returns:
 
     a plot of the 5 metrics of the agent (you have to plot it yourself with plt.show()
     """
+
+    if n_data is None:
+        n_data = len(agent.cumulative_reward)
 
     cumulative_rewards = agent.cumulative_reward
     max_durations = agent.max_duration
@@ -130,21 +133,21 @@ def plot_5_metrics(agent, smooth=True, n_ticks=30):
         # set values
         ax.set_xticklabels(df.index[::n_ticks])
     
-    
-    df.plot(x='episode', y='cumulative_reward', ax=axes[0])
-    df.plot(x='episode', y='max_duration', ax=axes[1])
-    df.plot(x='episode', y='loss', ax=axes[2])
-    df.plot(x='episode', y='score', ax=axes[3])
-    df.plot(x='episode', y='max_tile', ax=axes[4])
+    # change the figure size
+    fig.set_size_inches(18.5, 10.5)
+    df[:n_data].plot(x='episode', y='cumulative_reward', ax=axes[0])
+    df[:n_data].plot(x='episode', y='max_duration', ax=axes[1])
+    df[:n_data].plot(x='episode', y='loss', ax=axes[2])
+    df[:n_data].plot(x='episode', y='score', ax=axes[3])
+    df[:n_data].plot(x='episode', y='max_tile', ax=axes[4])
 
     # plot in red the ema
     if smooth:
-        df.plot(x='episode', y='ewma_cumreward', ax=axes[0], color='red')
-        df.plot(x='episode', y='ewma_duration', ax=axes[1], color='red')
-        df.plot(x='episode', y='ewma_loss', ax=axes[2], color='red')
-        df.plot(x='episode', y='ewma_score', ax=axes[3], color='red')
-        df.plot(x='episode', y='ewma_max_tile', ax=axes[4], color='red')
-    plt.title("Metrics for Agent " + agent.name)
+        df[:n_data].plot(x='episode', y='ewma_cumreward', ax=axes[0], color='red')
+        df[:n_data].plot(x='episode', y='ewma_duration', ax=axes[1], color='red')
+        df[:n_data].plot(x='episode', y='ewma_loss', ax=axes[2], color='red')
+        df[:n_data].plot(x='episode', y='ewma_score', ax=axes[3], color='red')
+        df[:n_data].plot(x='episode', y='ewma_max_tile', ax=axes[4], color='red')
 
 def stackplot_actions(agent):
     """ Plot the action distribution of the agent over time.

@@ -6,10 +6,12 @@ import torch.nn.functional as F
 import torch.optim as optim
 import math
 import random
+import warnings
 from collections import namedtuple, deque
 import tqdm
 import numpy as np
 from itertools import count
+import os
 
 class RandomAgent(object):
     """An agent that acts randomly. It is used as a baseline for the other agents.
@@ -242,7 +244,7 @@ class ConvDQN_Agent():
 
 
     def reset(self):
-        """Reset the metrics of the agent.
+        """Reset the specs of the agent.
         """
 
         self.action_dist = []
@@ -440,28 +442,50 @@ class ConvDQN_Agent():
         Args:
             path (_str_): The file where to save the model.
         """
+        
+        l, _ = path.split("trained_architectures")
+        
+        path_net = path.replace(".pt", "_net.pt")
+        nets = {"policy_net": self.policy_net,
+                "target_net": self.target_net,
+                "optimizer": self.optimizer.state_dict()}
+        
+        torch.save(nets, path_net)
 
-        metrics = {"policy_net": self.policy_net.state_dict(),
-                    "target_net": self.target_net.state_dict(),
-                    "optimizer": self.optimizer.state_dict(),
-                    "loss_history": self.loss_history,
-                    "cumulative_reward": self.cumulative_reward,
-                    "score": self.score,
-                    "max_duration": self.max_duration,
-                    "max_tile": self.max_tile,
-                    "steps_done": self.steps_done,
-                    "TAU": self.TAU,
-                    "alpha": self.alpha,
-                    "EPS_START": self.EPS_START,
-                    "EPS_END": self.EPS_END,
-                    "EPS_DECAY": self.EPS_DECAY,
-                    "BATCH_SIZE": self.BATCH_SIZE,
-                    "GAMMA": self.GAMMA,
-                    "LR": self.LR,
-                    "steps_per_action": self.steps_per_action,
-                    "action_dist": self.action_dist,
-                    "mean_board": self.mean_board}
-        torch.save(metrics, path)
+        path_specs = path.replace("trained_architectures", "trained_architectures/specs")
+        path_specs = path.replace(".pt", "_specs.pt")       
+        
+        specs = {"steps_done": self.steps_done,
+                 "TAU": self.TAU,
+                 "alpha": self.alpha,
+                 "EPS_START": self.EPS_START,
+                 "EPS_END": self.EPS_END,
+                 "EPS_DECAY": self.EPS_DECAY,
+                 "BATCH_SIZE": self.BATCH_SIZE,
+                 "GAMMA": self.GAMMA,
+                 "LR": self.LR,
+                 "mean_board": self.mean_board,
+                 "steps_per_action": self.steps_per_action}
+        
+        torch.save(specs, path_specs)
+
+        attribute_to_folder = {
+            "losses": "losses",
+            "cumulative_reward": "cumulative_reward",
+            "score": "score",
+            "max_duration": "max_duration",
+            "max_tile": "max_tile",
+            "action_dist": "action_dist"
+        }
+
+        for attr, folder in attribute_to_folder.items():
+            save_path = os.path.join("trained_architectures", folder, os.path.basename(path).replace(".pt", f"_{attr}.pt"))
+            if l != '':
+                save_path = os.path.join(l, save_path)
+            if os.path.exists(save_path):
+                torch.save(getattr(self, attr), save_path)
+            else:
+                warnings.warn(f"File not saved: {save_path}. The attribute {attr} will remain unsaved.")
 
     def load(self, path):
         """Load the model from the specified path. It loads the parameters of the agent
@@ -470,28 +494,54 @@ class ConvDQN_Agent():
         Args:
             path (_str_): The file where to load the model from.
         """
-        
-        metrics = torch.load(path, map_location=self.device)
-        self.policy_net.load_state_dict(metrics["policy_net"])
-        self.target_net.load_state_dict(metrics["target_net"])
-        self.optimizer.load_state_dict(metrics["optimizer"])
-        self.loss_history = metrics["loss_history"]
-        self.cumulative_reward = metrics["cumulative_reward"]
-        self.score = metrics["score"]
-        self.max_duration = metrics["max_duration"]
-        self.max_tile = metrics["max_tile"]
-        self.steps_done = metrics["steps_done"]
-        self.TAU = metrics["TAU"]
-        self.EPS_START = metrics["EPS_START"]
-        self.EPS_END = metrics["EPS_END"]
-        self.EPS_DECAY = metrics["EPS_DECAY"]
-        self.BATCH_SIZE = metrics["BATCH_SIZE"]
-        self.GAMMA = metrics["GAMMA"]
-        self.LR = metrics["LR"]
-        self.steps_per_action = metrics["steps_per_action"]
-        self.action_dist = metrics["action_dist"]
-        self.mean_board = metrics["mean_board"]
-        self.alpha = metrics["alpha"]
+        # split path in 2 pieces, before trained_architectures from trained_architectures onwards
+
+        l, _ = path.split("trained_architectures")
+
+        path_net = path.replace(".pt", "_net.pt")
+        nets = torch.load(path_net, map_location=self.device)
+        policy_net = nets["policy_net"]
+        target_net = nets["target_net"]
+        optimizer = nets["optimizer"]
+        self.policy_net.load_state_dict(policy_net.state_dict())
+        self.target_net.load_state_dict(target_net.state_dict())
+        self.optimizer.load_state_dict(optimizer)
+
+        path_specs = path.replace("trained_architectures", "trained_architectures/specs")
+        path_specs = path_specs.replace(".pt", "_specs.pt")
+
+        specs = torch.load(path_specs, map_location=self.device)
+        self.steps_done = specs["steps_done"]
+        self.TAU = specs["TAU"]
+        self.EPS_START = specs["EPS_START"]
+        self.EPS_END = specs["EPS_END"]
+        self.EPS_DECAY = specs["EPS_DECAY"]
+        self.BATCH_SIZE = specs["BATCH_SIZE"]
+        self.GAMMA = specs["GAMMA"]
+        self.LR = specs["LR"]
+        self.steps_per_action = specs["steps_per_action"]
+        self.mean_board = specs["mean_board"]
+        self.alpha = specs["alpha"]
+
+        attribute_to_folder = {
+            "losses": "losses",
+            "cumulative_reward": "cumulative_reward",
+            "score": "score",
+            "max_duration": "max_duration",
+            "max_tile": "max_tile",
+            "action_dist": "action_dist"
+        }
+
+        for attr, folder in attribute_to_folder.items():
+            save_path = os.path.join("trained_architectures", folder, os.path.basename(path).replace(".pt", f"_{attr}.pt"))
+            # if l is not empty, add it to the path
+            if l != "":
+                save_path = os.path.join(l, save_path)
+            if os.path.exists(save_path):
+                setattr(self, attr, torch.load(save_path, map_location=self.device))
+            else:
+                warnings.warn(f"File not found: {save_path}. The attribute {attr} will remain unchanged.")
+
         # set the network in evaluation mode
         self.policy_net.eval()
         self.target_net.eval()

@@ -42,7 +42,7 @@ class ConvolutionalNetwork(nn.Module):
         return self.fc3(x)
         
 
-class FatConvolutionalNetwork(nn.Module):
+class BigConvolutionalNetwork(nn.Module):
     """_This architecture was the mainly used for training the agent, it has 1 conv 3D layer, 
     and 3 fully connected layers, we used batch normalization for the first conv layer and the first fully connected;
     the activation function is the ReLU, and we applied L2 regularization_
@@ -62,7 +62,7 @@ class FatConvolutionalNetwork(nn.Module):
             l2_regularization (float, optional): L2 regularization parameter. Defaults to 0.001.
         """
 
-        super(FatConvolutionalNetwork, self).__init__()
+        super(BigConvolutionalNetwork, self).__init__()
         self.out_channels = out_channels
         self.l2_regularization = l2_regularization
         self.conv = nn.Conv3d(in_channels=1, out_channels=self.out_channels, kernel_size=(2, 4, 4), stride=1, padding=0)
