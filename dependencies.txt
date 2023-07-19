@@ -1,0 +1,6 @@
+python  (3.10)
+numpy   (1.23.5)
+gym
+torch
+numba 
+matplotlib

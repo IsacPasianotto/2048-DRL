@@ -1,2 +1,2 @@
-# 2048-DRL
-An implementation of a DQN-agent which plays the 2048 game.
+# rl-progetto
+progetto 2048 reinforcment learning
