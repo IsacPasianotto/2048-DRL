@@ -234,6 +234,18 @@ The methods of the `DQN_Agent` and `ConvDQN_Agent` classes are the following:
 
 
 
+## Demo
+
+You can use the [given notebook(./Report.ipynb) to play around with the environment and the agents.\
+The notebook contains examples of how to use the modules we implemented in order to train and test the agent. 
+
+Here a visual example about how the random and the DQN agent play the game:
+
+![random_agent](./images/random_agent.gif)*Gif 1: Random agent playing a game*
+
+![dqn_agent](./images/trained_ai.gif)*Gif 2: DQN agent playing a game*
+
+
 ## References
 
 - [2048 game](https://en.wikipedia.org/wiki/2048_(video_game))
