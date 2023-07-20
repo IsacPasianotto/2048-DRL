@@ -186,7 +186,6 @@ def jointplot_score_duration(scores_agent, durations_agent, name_agent):
     df['duration'] = durations_agent
     # plot the jointplot
     sns.jointplot(x='duration', y='score', data=df, color='red')
-    plt.title("Score vs Duration for Agent " + name_agent)
 
 def heatmap_mean_board(agent):
     """ Plot the heatmap of the mean board of the agent.

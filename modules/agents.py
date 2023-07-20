@@ -494,7 +494,6 @@ class ConvDQN_Agent():
         Args:
             path (_str_): The file where to load the model from.
         """
-        # split path in 2 pieces, before trained_architectures from trained_architectures onwards
 
         l, _ = path.split("trained_architectures")
 
@@ -546,8 +545,7 @@ class ConvDQN_Agent():
         # set the network in evaluation mode
         self.policy_net.eval()
         self.target_net.eval()
-    
-    # now rewrite _binary_tensor avoiding for loops
+ 
     def _binary_tensor(self, state):
         """Convert the state of the game to a binary tensor.
         The tensor is of shape (12, 4, 4), where the first dimension
