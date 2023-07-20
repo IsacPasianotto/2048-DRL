@@ -77,17 +77,17 @@ For this reason, the choice was to use a model-free approach, where the agent le
 ### TD-learning
 
 
-We will stay in the class of *Action-Value methods*. In particular, we will use the **Temporal Difference** (TD) learning algorithm to estimate the optimal action-value function $Q*(s,a)$.
+We will stay in the class of *Action-Value methods*. In particular, we will use the **Temporal Difference** (TD) learning algorithm to estimate the optimal action-value function $Q*(s, a)$.
 
 
-$$Q*^{(\pi)}  =  \max_{\pi} \ E_{\pi} \left(R_t \vert s_t = s,\ a_t = a \right)$$
+$$Q^{*(\pi)}  =  \max_{\pi} \ E_{\pi} \left(R_t \vert s_t = s,\ a_t = a \right)$$
 
-$$Q*^{(\pi)} =  \ \sum_{s'} p(s'|s,a) \left( r(s,a,s') + \gamma \max_{a'} \pi(a'|s') Q*^{(\pi)}(s',a') \right)$$
+$$Q^{*(\pi)} =  \ \sum_{s'} p(s'|s,a) \left( r(s,a,s') + \gamma \max_{a'} \pi(a'|s') Q^{*(\pi)}(s',a') \right)$$
 
 Where $\gamma$ is the discount factor that encodes the time horizon of the problem.
 
 
-There are more possible choices: *TD(0)*, TD($\lambda$), and *Monte Carlo* method. We have decided to implement a TD(0) algorithm, which is the simplest one and the most cheap in terms of computational cost.
+There are more possible choices: *TD(0)*, TD($\lambda$), and *Monte Carlo* method. We have decided to implement a TD(0) algorithm, which is the simplest one and the cheapest in terms of computational cost.
 
 The TD(0) algorithm is the following:
 
@@ -108,7 +108,7 @@ This approach is called **Deep Q-Network** (DQN), and changes a little bit the s
 ![Difference between Q-Learning and DQN](./images/DQN-explain.png)*Fig. 4: Difference between traditional Q-learning approach and DQN*
 
 
-Then the action $a$ is chosen as $\arg\max_{a} Q(s,a)$, which is the index of the maximum value of the output vector of the neural network. The previous pseudo-code can be adapted to this new setting in the following way:
+Then the action $a$ is chosen as $\arg\max_{a} Q(s, a)$, which is the index of the maximum value of the output vector of the neural network. The previous pseudo-code can be adapted to this new setting in the following way:
 
 ![DQN algorithm](./images/dqn-algorithm.png)*Fig. 5: DQN algorithm pseudocode*
 
@@ -159,23 +159,23 @@ The class has the following attributes:
 | z `board`       | a 2D array of integers, where each integer represents the value of the tile in that position, and 0 represents an empty tile.  |
 | `action_space`  | the action space of the environment, which is a `Discrete` space with 4 possible actions: `up`, `down`, `left`, `right`        |
 | `score`         | the current score of the game                                                                                                  |
-| `legit_actions` | a numpy array of booleans values with size 4, it represents if an action can be performed or not. For example, if `legit_actions[0]` is `True` then the action `up` can be performed, otherwise it is not a valid action. |
-| `log_rewards`   | a boolean value which controls the reward function, if `True` the reward is the logarithm in base 2 of the new tile value, otherwise the reward is the new tile value. |
+| `legit_actions` | a numpy array of booleans values with size 4, it represents if an action can be performed or not. For example, if `legit_actions[0]` is `True` then the action `up` can be performed, otherwise, it is not a valid action. |
+| `log_rewards`   | a boolean value that controls the reward function, if `True` the reward is the logarithm in base 2 of the new tile value, otherwise the reward is the new tile value. |
 
 The methods and functions of the class are the following:
 
 
 | method/function                                   | description                                                                                                                                                                                                                                                                                                    |
 |---------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `__init__(self, log_rewards=False)`               | the constructor of the class, it initializes the board and the action space. If `log_rewards` is `True` then the reward is the logarithm in base 2 of the new tile value, otherwise the reward is the new tile value.                                                                                          |
+| `__init__(self, log_rewards=False)`               | the constructor of the class, it initializes the board and the action space. If `log_rewards` is `True` then the reward is the logarithm in base 2 of the new tile value, otherwise, the reward is the new tile value.                                                                                          |
 | `reset(self)`                                     | resets the environment, it sets the board to the initial state and returns the state of the environment.                                                                                                                                                                                                       |
 | `step(self, action)`                              | performs the action `action` on the environment, and returns a tuple `(state, reward, done, info)`, where `state` is the new state of the environment, `reward` is the reward obtained by performing the action, `done` is a boolean value which is `True` if the game is over, `info` is an empty dictionary. |
 | `get_legit_actions(self)`                         | returns an array of booleans values with size 4, it represents if an action can be performed or not.                                                                                                                                                                                                           |
-| `_UP`, `_DOWN`, `_LEFT`, `_RIGHT`                 | function that performs the action `up`, `down`, `left` and `right` respectively. They are used by `step` method.                                                                                                                                                                                               |
-| `_can_UP`, `_can_DOWN`, `_can_LEFT`, `_can_RIGHT` | functions that returns `True` if the action `up`, `down`, `left` and `right` respectively can be performed, otherwise it returns `False`                                                                                                                                                                       |
+| `_UP`, `_DOWN`, `_LEFT`, `_RIGHT`                 | function that performs the action `up`, `down`, `left` and `right` respectively. They are used by the `step` method.                                                                                                                                                                                               |
+| `_can_UP`, `_can_DOWN`, `_can_LEFT`, `_can_RIGHT` | functions that return `True` if the action `up`, `down`, `left` and `right` respectively can be performed, otherwise it returns `False`                                                                                                                                                                       |
 | `_add_random_tile(p)`                             | adds a new tile into a random free position on the board. `p` is the probability of getting a 2 tile (otherwise it will spawn a 4)                                                                                                                                                                             |
 | `is_full_board(self)`                             | returns `True` if the board is full, otherwise it returns `False`                                                                                                                                                                                                                                              |
-| `is_game_over(self)`                              | returns informations about the state of the game (won and/or finished)                                                                                                                                                                                                                                         |
+| `is_game_over(self)`                              | returns information about the state of the game (won and/or finished)                                                                                                                                                                                                                                         |
 
 
 
