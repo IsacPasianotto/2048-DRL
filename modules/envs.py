@@ -165,6 +165,15 @@ class Game2048Env(gym.Env, object):
         return False
 
     def _LEFT(self):
+        """_Performs the action "LEFT". all the tiles are moved to the most left position
+        they can reach. If two tiles with the same value are in the same row, they are
+        summed and the score is updated._
+
+        Returns:
+            _int_: _The sum of the values (or their log2 values if self.log_reward is True) of the
+            new generates tile performing the action_
+        """
+
         delta = 0
         for i in range(4):
             row = self.board[i, :]
@@ -185,6 +194,12 @@ class Game2048Env(gym.Env, object):
         return delta
     
     def _can_LEFT(self):
+        """_Checks if an action "LEFT" could change the board_
+
+        Returns:
+            _Bool_: _True, if "LEFT" is a legit action, False otherwise_
+        """
+
         for i in range(4):
             row = self.board[i, :]
             for j in range(1, 4):
@@ -194,6 +209,15 @@ class Game2048Env(gym.Env, object):
         return False
 
     def _RIGHT(self):
+        """_Performs the action "LEFT". all the tiles are moved to the most left position
+        they can reach. If two tiles with the same value are in the same row, they are
+        summed and the score is updated._
+
+        Returns:
+            _int_: _The sum of the values (or their log2 values if self.log_reward is True) of the
+            new generates tile performing the action_
+        """
+
         delta = 0
         for i in range(4):
             row = self.board[i, :]
@@ -214,6 +238,11 @@ class Game2048Env(gym.Env, object):
         return delta
     
     def _can_RIGHT(self):
+        """__Checks if an action "RIGHT" could change the board_
+        Returns:
+            _Bool_: _True, if "RIGHT" is a legit action, False otherwise_
+        """
+
         for i in range(4):
             row = self.board[i, :]
             for j in range(2, -1, -1):
@@ -223,11 +252,34 @@ class Game2048Env(gym.Env, object):
         return False
 
     def _is_changed(self, board):
+        """_Checks if the board has some differences with respect to
+        a board passed as argument_
+
+        Args:
+            board (np.Array((4,4))): _The boar you want to check if is equal to self.board_
+
+        Returns:
+            _Bool_: _True if the 2 boards are equals, false otherwise_
+        """
         return not np.array_equal(board, self.board)
     
     def step(self, action, verbose=False):
-        # Perform the specified action
-        # Update the board and score accordingly
+        """_Performs the action passed as argument, checks if the game is over
+        and if it is not, adds a random tile to the board and updates the
+        environment attributes. The reward is the increase of the score._
+
+        Args:
+            action (_int_): _The action to perform. 0: UP, 1: DOWN, 2: LEFT, 3: RIGHT_
+            verbose (bool, optional): _If True, prints relevant information about the step taken (debugging purposes)_. Defaults to False.
+
+        Returns:
+            _self.board (np.array((4,4))): _The new board after the action is performed_
+            _delta (int)_: _The increase of the score after the action is performed_
+            _done (bool)_: _True if the game is over, False otherwise_
+            _won (bool)_: _True if the game is won (2048 reached), False otherwise_
+            _{}_: _Empty dictionary (required by the gym.Env class)_
+        """
+
         delta = 0
         board = self.board.copy()
         if action == 0:
@@ -251,8 +303,6 @@ class Game2048Env(gym.Env, object):
         # Check if the game is over (no more valid moves or 2048 tile reached)
         done, won = self._is_game_over()
 
-        ## mega reward in case of winning
-        # since no action is taken in case of winning, we need to add the reward here
         if won:
             if self.log_rewards:
                 delta += 11
@@ -277,10 +327,22 @@ class Game2048Env(gym.Env, object):
         pass
 
     def _is_full_board(self):
+        """_Checks if the board is full_
+
+        Returns:
+            _Bool_: _True if the board is full, False otherwise_
+        """
         return np.all(self.board != 0)
 
     def _add_random_tile(self, p=0.9):
-        # return a couple of random indices representing the board coordinates
+        """_Extract a random free position on the board and add a tile with value 2 or 4
+        with probability p and 1-p respectively. If the board is full, the function
+        will not add any tile._
+
+        Args:
+            p (float, optional): _Probability to spawn a 2 tile (otherwise it will be spawned a 4)_. Defaults to 0.9.
+        """
+
         while True:
             idx = np.random.randint(low=0, high=4, size=(2,))
             if self.board[idx[0], idx[1]] == 0:
@@ -290,11 +352,17 @@ class Game2048Env(gym.Env, object):
                 break
 
     def _is_game_over(self):
-        # Check if the game is over (no more valid moves or 2048 tile reached)
-        if np.any(self.board > 2047):  # 2048 tile reached, we are using float32 so we can't check for == 2048
+        """_Checks if the game is over. The game is over if the board is full and no
+        move is possible or if the tile 2048 is reached._
+
+        returns:
+            _done (bool)_: _True if the game is over, False otherwise_
+            _won (bool)_: _True if the game is won (2048 reached), False otherwise_
+
+        """
+        
+        if np.any(self.board > 2047):  
             return True, True
-        # if legit_actions is empty, then the game is over
-        #if np.sum(self.legit_actions) == 0:
         if not np.any(self.get_legit_actions()):
             return True, False
         return False, False
