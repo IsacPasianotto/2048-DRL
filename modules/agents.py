@@ -524,7 +524,7 @@ class ConvDQN_Agent():
         self.alpha = specs["alpha"]
 
         attribute_to_folder = {
-            "losses": "losses",
+            "loss_history": "losses",
             "cumulative_reward": "cumulative_reward",
             "score": "score",
             "max_duration": "max_duration",
@@ -537,6 +537,7 @@ class ConvDQN_Agent():
             # if l is not empty, add it to the path
             if l != "":
                 save_path = os.path.join(l, save_path)
+        
             if os.path.exists(save_path):
                 setattr(self, attr, torch.load(save_path, map_location=self.device))
             else:
@@ -642,7 +643,7 @@ class ConvDQN_Agent():
                 print(f'Episode {i_episode} Loss {self.loss_history[i_episode]} Max tile: {self.max_tile[i_episode]} Max duration: {self.max_duration[i_episode]}')
 
             if i_episode % self.EPOCHS_CHECKPOINT == 0:
-                self.save(f"dqn_model_{i_episode}.pt")
+                # self.save(f"dqn_model_{i_episode}.pt") # used for testing only 
                 print(f'Episode {i_episode} finished after {t+1} steps. Max tile: {self.max_tile[i_episode]}')
 
 
@@ -686,7 +687,8 @@ class ConvDQN_Agent():
 
                 action = self.select_action(state, env.get_legit_actions(), kind=self.kind_action).clone().detach() # gather expected int64
                 observation, _, done, won, _ = env.step(action.item())
-        
+
+                self.update_mean_board(copy.deepcopy(observation))
                 if done and not won:
                     next_state = None
                 else:

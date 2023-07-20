@@ -51,8 +51,13 @@ def play_games(env, random_agent, n_games=10, verbose=False):
             "Durations": durations,
             "Cumrewards": cumrewards}
 
-def compare_agents(scores_agent):
+def compare_agents(scores_agent, names_agents=["DQN Agent", "Random Agent"]):
     """ Compare the scores of the agent with a random agent by making an histogram (it runs n games for the random agent).
+    
+    Parameters:
+
+    scores_agent: an array of scores of the agent
+    names_agents: a tuple of names of the agents
 
     Returns:
 
@@ -63,7 +68,7 @@ def compare_agents(scores_agent):
     
     random_agent = agents.RandomAgent()
     scores_random_player = play_games(env, random_agent, n_games=len(scores_agent), verbose=False)['Scores']
-    hist_agent_scores((scores_agent, scores_random_player), names_agents=["DQN Agent", "Random Agent"], bins=np.floor(np.sqrt(len(scores_agent))).astype(int))
+    hist_agent_scores((scores_agent, scores_random_player), names_agents=names_agents, bins=np.floor(np.sqrt(len(scores_agent))).astype(int))
 
 
 def hist_agent_scores(scores_agents, names_agents, bins=10, alpha=0.3, density=True, title="Histogram of 2048 scores"):
@@ -79,6 +84,8 @@ def hist_agent_scores(scores_agents, names_agents, bins=10, alpha=0.3, density=T
     title: title of the histogram
     """
 
+    plt.figure(figsize=(13, 8))
+
     for score_agent, name_agents in zip(scores_agents, names_agents):
         plt.hist(score_agent, bins=bins, alpha=alpha, density=density, label=name_agents)
    
@@ -88,7 +95,8 @@ def hist_agent_scores(scores_agents, names_agents, bins=10, alpha=0.3, density=T
     plt.ylabel('Frequency')
 
     title += " for"
-    title += " names_agents[0]" + " and" + " names_agents[1]"
+    for name_agent in names_agents:
+        title += f" {name_agent}"
 
     plt.title(title)
     # get prettier histogram
@@ -177,7 +185,7 @@ def jointplot_score_duration(scores_agent, durations_agent, name_agent):
     df = pd.DataFrame(scores_agent, columns=['score'])
     df['duration'] = durations_agent
     # plot the jointplot
-    sns.jointplot(x='duration', y='score', data=df, kind='hex', color='red')
+    sns.jointplot(x='duration', y='score', data=df, color='red')
     plt.title("Score vs Duration for Agent " + name_agent)
 
 def heatmap_mean_board(agent):
