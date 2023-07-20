@@ -273,6 +273,7 @@ Here a visual example about how the random and the DQN agent play the game:
 - [Pytorch DQN tutorial](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html)
 - [HuggingFace blog: deep Q-learning](https://huggingface.co/blog/deep-rl-dqn)
 - [RL-course](https://www.youtube.com/watch?v=oHHUaFJmON0&list=PLRwcSE2bmyBxc9u_tV65sZTGy729nqgiv&ab_channel=ICTPQuantitativeLifeSciences)
+- [AdamW Optimizer](https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html)
 
 
 
