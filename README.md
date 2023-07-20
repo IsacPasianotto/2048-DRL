@@ -77,12 +77,12 @@ For this reason, the choice was to use a model-free approach, where the agent le
 ### TD-learning
 
 
-We will stay in the class of *Action-Value methods*. In particular, we will use the **Temporal Difference** (TD) learning algorithm to estimate the optimal action-value function $Q*(s, a)$.
+We will stay in the class of *Action-Value methods*. In particular, we will use the **Temporal Difference** (TD) learning algorithm to estimate the optimal action-value function $Q^{\ast}(s, a)$.
 
 
-$$Q^{*(\pi)}  =  \max_{\pi} \ E_{\pi} \left(R_t \vert s_t = s,\ a_t = a \right)$$
+$$Q^{\ast(\pi)}  =  \max_{\pi} \ E_{\pi} \left(R_t \vert s_t = s,\ a_t = a \right)$$
 
-$$Q^{*(\pi)} =  \ \sum_{s'} p(s'|s,a) \left( r(s,a,s') + \gamma \max_{a'} \pi(a'|s') Q^{*(\pi)}(s',a') \right)$$
+$$Q^{\ast(\pi)} =  \ \sum_{s'} p(s'|s,a) \left( r(s,a,s') + \gamma \max_{a'} \pi(a'|s') Q^{\ast(\pi)}(s',a') \right)$$
 
 Where $\gamma$ is the discount factor that encodes the time horizon of the problem.
 
