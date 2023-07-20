@@ -32,11 +32,12 @@ def action_to_arrow(action):
 
     Returns:
         arrow: str, arrow corresponding to the action
-    """
+    """  
+    
     if action == 0: return "⬆"
     if action == 1: return "⬇"
-    if action == 2: return "➡"
-    if action == 3: return "⬅"
+    if action == 2: return "⬅"
+    if action == 3: return "➡"
     return ""
 
 def plot_board(env, agent, cmap=cmap, norm=norm, to_save=False, fname="2048.jpg", last_action=""):
