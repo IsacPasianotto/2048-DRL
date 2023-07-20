@@ -12,6 +12,7 @@ format:
         smaller: false
         toc: true
         slide-number: true
+        self-contained: true
 ---
 
 ## What is 2048?
