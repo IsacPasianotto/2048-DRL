@@ -236,7 +236,7 @@ The methods of the `DQN_Agent` and `ConvDQN_Agent` classes are the following:
 ## References
 
 - [2048 game](https://en.wikipedia.org/wiki/2048_(video_game))
-- [pythorch DQN tutorial](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html)
+- [Pytorch DQN tutorial](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html)
 - [HuggingFace blog: deep Q-learning](https://huggingface.co/blog/deep-rl-dqn)
 - [RL-course](https://www.youtube.com/watch?v=oHHUaFJmON0&list=PLRwcSE2bmyBxc9u_tV65sZTGy729nqgiv&ab_channel=ICTPQuantitativeLifeSciences)
 
