@@ -103,7 +103,7 @@ class ConvDQN_Agent():
     """
     This class implements a DQN agent with a convolutional neural network as model.
     It's act with an epsilon-greedy policy, which behavior is controlled by the parameters. 
-    Since the space of the states is too large (upper bounded by approximately 11^16), a Q-learning
+    Since the space of the states is too large (upper bounded by approximately 12^16), a Q-learning
     approach is not feasible. Instead we use a DQN approach, where the Q-function which maps
     the state-action pair to the expected reward is approximated by a neural network
     which takes as input the state of the game and outputs the expected reward for each action.
@@ -118,7 +118,7 @@ class ConvDQN_Agent():
         eps_start (float): The starting value of epsilon.
         eps_end (float): The final value of epsilon.
         eps_decay (int): How slowly/fast epsilon decays. It's influenced by kind_epsg.
-        kins_epsg (str): The kind of epsilon greedy policy to use. It can be: "torch_version" (default), "lai_robbins", "entropy".
+        kind_epsg (str): The kind of epsilon greedy policy to use. It can be: "torch_version" (default), "lai_robbins", "entropy".
         tau (float): The update rate of the target network.
         lr (float): The learning rate of the optimizer (AdamW).
         replay_memory_size (int): The maximum number of transitions to store in the replay buffer.

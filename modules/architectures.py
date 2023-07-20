@@ -102,8 +102,8 @@ class BigConvolutionalNetwork(nn.Module):
         x = F.relu(self.bn3(self.fc3(x)))
         return self.fc4(x)
         
-class Small_QNet(nn.Module):
-    """Network with 1 fully connected layer and 1 output layer
+class fc_QNet(nn.Module):
+    """Network with fully connected layers.
 
     Args:
         _
@@ -111,7 +111,7 @@ class Small_QNet(nn.Module):
         l2_regularization (float, optional): L2 regularization parameter. Defaults to 0.001.
     """
 
-    def __init__(self, n_observations, n_actions, n_neurons, l2_regularization=0.001):
+    def __init__(self, n_observations=12*4*4, n_actions=4, n_layers=3, n_neurons=128, l2_regularization=0.001):
         """_The constructor of the class Small_QNet_
 
         Args:
@@ -121,14 +121,18 @@ class Small_QNet(nn.Module):
             l2_regularization (float, optional): L2 regularization parameter. Defaults to 0.001.
         """
 
-        super(Small_QNet, self).__init__()
+        super(fc_QNet, self).__init__()
+        self.n_layers = n_layers
+        self.n_neurons = n_neurons
         self.layer1 = nn.Linear(n_observations, n_neurons)
-        self.layer2 = nn.Linear(n_neurons, n_actions)
+        for i in range(1,n_layers-1):
+            setattr(self, f"layer{i+1}", nn.Linear(n_neurons, n_neurons))
+        setattr(self, f"layer{n_layers}", nn.Linear(n_neurons, n_actions))
         self.l2_regularization = l2_regularization
 
         if self.l2_regularization > 1e-8:
-            self.layer1.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer1.weight)
-            self.layer2.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer2.weight)
+            for i in range(n_layers):
+                getattr(self, f"layer{i+1}").weight.register_hook(lambda grad: grad + self.l2_regularization * getattr(self, f"layer{i+1}").weight)
     
     def forward(self, x):
         """Performs a forward pass through the network and returns the output of the last layer.
@@ -140,148 +144,8 @@ class Small_QNet(nn.Module):
             _torch.Tensor_: Output tensor of shape (batch_size, n_actions).
         """
 
-        x = F.relu(self.layer1(x))
-        return self.layer2(x)   
+        x = x.flatten().view(x.size(0), -1)
+        for i in range(self.n_layers):
+            x = F.relu(getattr(self, f"layer{i+1}")(x))
+        return x
 
-class DQN_4Ls_256_BN(nn.Module):
-    """ Network with 4 fully connected layers, batch normalization and L2 regularization""
-
-    Args:
-        nn (_torch.nn_): _Pytorch neural network module_
-    """
-
-    def __init__(self, n_observations, n_actions, l2_regularization=0.001):
-        """_The constructor of the class DQN_4Ls_256_BN_
-
-        Args:
-            n_observations (_int_): _number of observations of the environment_
-            n_actions (_tin_): _number of actions of the environment_
-            l2_regularization (float, optional): _L2 regularization parameter_. Defaults to 0.001.
-        """
-
-        super(DQN_4Ls_256_BN, self).__init__()
-        self.layer1 = nn.Linear(n_observations, 256)
-        self.bn1 = nn.BatchNorm1d(256)
-        self.layer2 = nn.Linear(256, 256)
-        self.bn2 = nn.BatchNorm1d(256)
-        self.layer3 = nn.Linear(256, 256)
-        self.bn3 = nn.BatchNorm1d(256)
-        self.layer4 = nn.Linear(256, n_actions)
-        self.l2_regularization = l2_regularization
-
-        if self.l2_regularization > 1e-8:
-            self.layer1.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer1.weight)
-            self.layer2.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer2.weight)
-            self.layer3.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer3.weight)
-            self.layer4.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer4.weight)
-
-    def forward(self, x):
-        """Performs a forward pass through the network and returns the output of the last layer.
-
-        Args:
-            x (_torch.Tensor_): Input tensor of shape (batch_size, n_observations).
-
-        Returns:
-            _torch.Tensor_: Output tensor of shape (batch_size, n_actions).
-        """
-
-        x = F.relu(self.bn1(self.layer1(x)))
-        x = F.relu(self.bn2(self.layer2(x)))
-        x = F.relu(self.bn3(self.layer3(x)))
-        return self.layer4(x)
-
-class DQN_5Ls_N_neurons_BN(nn.Module):
-    """ Network with 5 fully connected layers, batch normalization and L2 regularization""
-
-    Args:
-        nn (_torch.nn_): _Pytorch neural network module_
-    """
-
-    def __init__(self, n_observations, n_actions, l2_regularization=0.001, n_neurons=256):
-        """_The constructor of the class DQN_4Ls_256_BN_
-
-        Args:
-            n_observations (_int_): _number of observations of the environment_
-            n_actions (_tin_): _number of actions of the environment_
-            l2_regularization (float, optional): _L2 regularization parameter_. Defaults to 0.001.
-            n_neurons (int, optional): _number of neurons in the fully connected layers_. Defaults to 256.
-        """
-
-        super(DQN_4Ls_256_BN, self).__init__()
-        self.layer1 = nn.Linear(n_observations, n_neurons)
-        self.bn1 = nn.BatchNorm1d(n_neurons)
-        self.layer2 = nn.Linear(n_neurons, n_neurons)
-        self.bn2 = nn.BatchNorm1d(n_neurons)
-        self.layer3 = nn.Linear(n_neurons, n_neurons)
-        self.bn3 = nn.BatchNorm1d(n_neurons)
-        self.layer4 = nn.Linear(n_neurons, n_neurons)
-        self.bn4 = nn.BatchNorm1d(n_neurons)
-        self.layer5 = nn.Linear(n_neurons, n_actions)
-        self.l2_regularization = l2_regularization
-
-        if self.l2_regularization > 1e-8:
-            self.layer1.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer1.weight)
-            self.layer2.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer2.weight)
-            self.layer3.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer3.weight)
-            self.layer4.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer4.weight)
-            self.layer5.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer5.weight)
-
-    def forward(self, x):
-        """Performs a forward pass through the network and returns the output of the last layer.
-
-        Args:
-            x (_torch.Tensor_): Input tensor of shape (batch_size, n_observations).
-
-        Returns:
-            _torch.Tensor_: Output tensor of shape (batch_size, n_actions).
-        """
-
-        x = F.leaky_relu(self.bn1(self.layer1(x)))
-        x = F.leaky_relu(self.bn2(self.layer2(x)))
-        x = F.leaky_relu(self.bn3(self.layer3(x)))
-        x = F.leaky_relu(self.bn4(self.layer4(x)))
-        return self.layer5(x)
-    
-class DQN_3Ls_128(nn.Module):
-    """ Network with 3 fully connected layers and L2 regularization""
-
-    Args:
-        nn (_int_): _Pytorch neural network module_
-    """
-
-    def __init__(self, n_observations, n_actions, l2_regularization=0.001):
-        """Constructor of the class DQN_3Ls_128
-
-        Args:
-            n_observations (_int_): _number of observations of the environment_
-            n_actions (_int_): _number of actions of the environment_
-            l2_regularization (float, optional): _L2 regularization parameter_. Defaults to 0.001.
-        """
-
-        super(DQN_3Ls_128, self).__init__()
-        self.layer1 = nn.Linear(n_observations, 128)
-        self.layer2 = nn.Linear(128, 128)
-        self.layer3 = nn.Linear(128, n_actions)
-        self.l2_regularization = l2_regularization
-
-        if self.l2_regularization > 1e-8:
-            self.layer1.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer1.weight)
-            self.layer2.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer2.weight)
-            self.layer3.weight.register_hook(lambda grad: grad + self.l2_regularization * self.layer3.weight)
-
-
-    def forward(self, x):
-        """
-        Performs a forward pass through the network and returns the output of the last layer.
-        
-        Args:
-            x (_torch.Tensor_): Input tensor of shape (batch_size, n_observations).
-            
-        Returns:
-        
-            _torch.Tensor_: Output tensor of shape (batch_size, n_actions).
-        """
-        
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
-        return self.layer3(x)
