@@ -1,6 +1,12 @@
-python  (3.10)
-numpy   (1.23.5)
-gym
-torch
-numba 
-matplotlib
+Executing the various pieces of codes in this repository, the following package will be required:
+
+	python  
+	numpy   
+	gym
+	torch 
+	matplotlib
+	copy
+	tqdm
+	pandas
+	seaborn
+
