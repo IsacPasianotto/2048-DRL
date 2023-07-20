@@ -55,14 +55,12 @@ This estimation is not precise, since it does not take into account some impossi
 
 In a 2048 game, the score is incremented by the amount of the new tile formed by the merge of two tiles. A similar behavior is reasonable for the reward we assign to the agent. In fact, we want the agent to maximize the score and try to reach tiles with values as high as possible.
 
-In order to have a more uniform reward distribution, we have implemented the possibility to consider the logarithm in base 2 of the new tile value as the reward. In this way, the reward obtained by a merge is always between 1 and 11. The behavior of the reward function controlled by the parameter `log_rewards` of the environment class `Game2048`.
+In order to have a more uniform reward distribution, we have implemented the possibility to consider the logarithm in base 2 of the new tile value as the reward. In this way, the reward obtained by a merge is always between 1 and 11. The behavior of the reward function controlled by the parameter `log_rewards` of the environment class `Game2048`: 
 
-$$
-r = \begin {cases}
-\text{new tile value} & \text{if } \texttt{log_rewards} \text{ is } \texttt{False}\\
-\log_2(\text{new tile value}) & \text{if } \texttt{log_rewards} \text{ is } \texttt{True}
-\end{cases}
-$$
+$r = \text{new tile value}$ if `log_rewards` is `False`\
+$r = \log_2(\text{new tile value})$ if `log_rewards` is `True`
+
+
 
 Even if we have not considered it in our results (due to time constraints) we've implemented the possibility to assign a negative reward to the agent when it performs an action. That is done by setting the parameter `penalty_move` in the [agent class used](modules/agents.py) (with a positive value, the program will subtract that value). The idea is to encourage the agent to perform principally moves that lead to a merge of tiles, and not moves that simply shift the tiles without any merge; moreover, we forced the model to reach tiles with higher values by adding a **reward per action** when we reach values greater or equal to 512, in particular for each step, we reward the agent with an additional value of num_tiles==512 + 2.5*num_tiles==1024 + 6*num_tiles==2048.
 
@@ -82,10 +80,10 @@ For this reason, the choice was to use a model-free approach, where the agent le
 We will stay in the class of *Action-Value methods*. In particular, we will use the **Temporal Difference** (TD) learning algorithm to estimate the action-value function $Q(s,a)$.
 
 $$
-\begin {align}
+\begin {split}
 Q^{(\pi)} =  & \ \mathbb{E}_{\pi} \left[ R_t \vert s_t = s,\ a_t = a \right] \\
 = & \ \sum_{s'} p(s'|s,a) \left[ r(s,a,s') + \gamma \max_{a'} \pi(a'|s') Q^{(\pi)}(s',a') \right]
-\end{align}
+\end{split}
 $$
 
 Where $\gamma$ is the discount factor tha encodes the time horizon of the problem.
