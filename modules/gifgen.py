@@ -13,9 +13,9 @@ import matplotlib.colors
 import matplotlib.patches as patches
 import matplotlib.animation as animation
 import torch
-import agents as agents
-import envs as envs
-import architectures
+import modules.agents as agents
+import modules.envs as envs
+import modules.architectures as architectures
 
 
 # Constants
@@ -34,8 +34,8 @@ def action_to_arrow(action):
         arrow: str, arrow corresponding to the action
     """
     if action == 0: return "⬆"
-    if action == 1: return "➡"
-    if action == 2: return "⬇"
+    if action == 1: return "⬇"
+    if action == 2: return "➡"
     if action == 3: return "⬅"
     return ""
 
@@ -181,23 +181,18 @@ def play_gameDQN (env, agent, verbose=False, gif=False, fname_gif="2048.gif", fp
     agent.policy_net.eval()
 
     while not done:
-
         if gif:
             frame = plot_board(env, agent, to_save=False, last_action=action)
             plt.axis('off')
             frames.append([plt.imshow(frame)])
-
         # The agent now must play, not learn again
-
         state = binary_tensor(state)
         # select and perform an action
         action = agent.select_action(state, env.get_legit_actions(), train=False)
         new_state, reward, done, won, _ = env.step(action, verbose=verbose)
-
-
         # update state
         state = new_state
-
+        
     if gif:
 
         ani = animation.ArtistAnimation(fig, frames, interval=100, blit=True) # blit=True to speed up the animation
@@ -207,7 +202,6 @@ def play_gameDQN (env, agent, verbose=False, gif=False, fname_gif="2048.gif", fp
         #ani.save(fname_gif, writer='pillow', fps=5)
     if plot:
         plot_board(env, agent, to_save=True, last_action=action, fname=fname_plt)
-
 
 
 # Random Agent
@@ -225,3 +219,18 @@ def play_gameDQN (env, agent, verbose=False, gif=False, fname_gif="2048.gif", fp
 # agent.load_model("path_to_model.pt")
 # play_gameDQN(env, agent, verbose=False, gif=True, fname_gif="2048.gif", fps=4.5, plot=True, fname_plt="2048.jpg")
 
+
+# env = envs.Game2048Env()
+# random_agent = agents.RandomAgent()
+# play_gameRA(env, random_agent, verbose=False, plot=False, gif=True, fname_gif="2048_random_agent.gif")
+
+# env = envs.Game2048Env()
+# model = architectures.BigConvolutionalNetwork()
+# trained_agent = agents.ConvDQN_Agent(model=model)
+
+# import sys
+# sys.path.append('../')
+
+# trained_agent.load("trained_architectures/convdqn_agent_long_train.pt")
+
+# play_gameDQN(env, trained_agent, verbose=False, gif=True, fname_gif="2048_trained_agent.gif", fps=4.5)
