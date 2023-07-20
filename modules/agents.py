@@ -49,17 +49,6 @@ class RandomAgent(object):
 # object for storing the transitions: s, a -> r, s'
 Transition = namedtuple('Transition',  ('state', 'action', 'next_state', 'reward'))
 
-
-# BATCH_SIZE is the number of transitions sampled from the replay buffer
-# GAMMA is the discount factor as mentioned in the previous section
-# EPS_START is the starting value of epsilon
-# EPS_END is the final value of epsilon
-# EPS_DECAY controls the rate of exponential decay of epsilon, higher means a slower decay
-# TAU is the update rate of the target network
-# LR is the learning rate of the ``AdamW`` optimizer
-
-
-
 # create a deque object with a max length of capacity, when new items are added and the length is above capacity, the oldest items are automatically removed
 class ReplayMemory(object):
     """Create a deque object with a max length of capacity, when new items are added and the
