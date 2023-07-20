@@ -8,8 +8,8 @@ Date:\
 
 ## What is 2048?
 
-It is a single-player game where the player has to slide tiles on a grid to combine them and create a tile with the number 2048. The game is played on a 4x4 grid, which is initially filled with two tiles, and every turn a new tile with a number 2 or more rarely 4 appears at a random empty spot on the board.\
-The player can slide the tiles in four directions: up, down, left, and right, the slide operation moves the tiles as far as possible in the chosen direction until they are stopped by either another tile or the edge of the grid. If two cells with the same number collide while moving, they will merge into a tile with the sum of their two values and the total score is incremented by the amount of the new formed tile. The resulting tile cannot merge with another tile again in the same move. Note that due to the game rules, the board will always be filled with tiles with a power of 2.
+It is a single-player game where the player has to slide tiles on a grid to combine them and create a tile with the number 2048. The game is played on a 4x4 grid, which is initially filled with two tiles, and every turn a new tile with the number 2 or more rarely 4 appears at a random empty spot on the board.\
+The player can slide the tiles in four directions: up, down, left, and right, the slide operation moves the tiles as far as possible in the chosen direction until they are stopped by either another tile or the edge of the grid. If two cells with the same number collide while moving, they will merge into a tile with the sum of their two values, and the total score is incremented by the amount of the newly formed tile. The resulting tile cannot merge with another tile again in the same move. Note that due to the game rules, the board will always be filled with tiles with a power of 2.
 
 ![example move](./images/example_move.png)*Fig. 1: example of a move "right" performed on a board*
 
@@ -24,10 +24,10 @@ We will define a move *valid* if it produces a change in the board state, otherw
 In order to implement the environment, we have taken into account two different strategies:
 
 - A 2D array of integers, where each integer represents the value of the tile in that position, and 0 represents an empty tile.
-- A 3D array of size 12x4x4, where the first dimension represents the value of the tile, the second and third dimensions represent the position of the tile on the board.
+- A 3D array of size 12x4x4, where the first dimension represents the value of the tile, and the second and third dimensions represent the position of the tile on the board.
 
 After some tests, we have decided to use the first approach, since it seems slightly more efficient in terms of speed execution.
-Anyway as we will see later, we have implement a function that allows us to convert the 2D array into a 3D array when it was more convenient to use it.
+Anyway as we will see later, we have implemented a function that allows us to convert the 2D array into a 3D array when it was more convenient to use it.
 
 The environment implementation is done with the [`Game2048` class](modules/envs.py) which extends the [`gym.Env` class](https://gymnasium.farama.org/api/env/).
 
@@ -35,27 +35,27 @@ The environment implementation is done with the [`Game2048` class](modules/envs.
 
 ### Action space
 
-action space $A$ is **discrete**, but we defined it not constant over time. In fact in a given state $s$ the agent could have a different number of actions available, depending on the board configuration. In any case it holds that
+action space $A$ is **discrete**, but we defined it as not constant over time. In fact, in a given state $s$ the agent could have a different number of actions available, depending on the board configuration. In any case, it holds that
 
 $$
 A(s) \subseteq \mathcal{A} = \{\texttt{up},\ \texttt{down},\ \texttt{left},\ \texttt{right}\}\qquad \forall \ s \in S
 $$
 
-Another choice could have been to define the action space constant in time and always equal to $\mathcal{A}$, we have decided to not do it trying to reduce the complexity of the problem and to make the agent learn faster.
+Another choice could have been to define the action space constant in time and always equal to $\mathcal{A}$, but we have decided to not do it trying to reduce the complexity of the problem and to make the agent learn faster.
 
-All the actions are **deterministic**, that means that the agent can choose an action and the environment will perform it with $\Pr(\text{action}=\text{execution})=1$.
+All the actions are **deterministic**, which means that the agent can choose an action, and the environment will perform it with $\Pr(\text{action}=\text{execution})=1$.
 
 
 ### State space
 
 The possible states $s$ which populate the state space $S$ are **discrete** and **finite**. The exact cardinality of $S$ is not trivial to compute, however, we can give an upper bound. In fact, considering that there are 16 tiles on the board, each of them can have a value between 0 and 2048 (that means 12 possible values), assuming that the tiles are independent, we can say that the cardinality of $S$ is at most $12^{16}$.
-This estimation is not precise, since it does not take into account some impossible configurations but it is goof enough for given an idea of the order of magnitude of $S$, which still very huge.
+This estimation is not precise, since it does not take into account some impossible configurations but it is good enough for giving an idea of the order of magnitude of $S$, which is still very huge.
 
 ### Reward
 
-In a 2048 game, the score is incremented by the amount of the new tile formed by the merge of two tiles. A similar behavior is reasonable for the reward we assign to the agent. In fact, we want the agent to maximize the score and try to reach tiles with values as high as possible.
+In a 2048 game, the score is incremented by the number of new tiles formed by the merging of two tiles. Similar behavior is reasonable for the reward we assign to the agent. In fact, we want the agent to maximize the score and try to reach tiles with values as high as possible.
 
-In order to have a more uniform reward distribution, we have implemented the possibility to consider the logarithm in base 2 of the new tile value as the reward. In this way, the reward obtained by a merge is always between 1 and 11. The behavior of the reward function controlled by the parameter `log_rewards` of the environment class `Game2048`: 
+In order to have a more uniform reward distribution, we have implemented the possibility to consider the logarithm in base 2 of the new tile value as the reward. In this way, the reward obtained by a merge is always between 1 and 11. The behavior of the reward function is controlled by the parameter `log_rewards` of the environment class `Game2048`: 
 
 $r = \text{new tile value}$ if `log_rewards` is `False`\
 $r = \log_2(\text{new tile value})$ if `log_rewards` is `True`
@@ -64,13 +64,13 @@ $r = \log_2(\text{new tile value})$ if `log_rewards` is `True`
 
 Even if we have not considered it in our results (due to time constraints) we've implemented the possibility to assign a negative reward to the agent when it performs an action. That is done by setting the parameter `penalty_move` in the [agent class used](modules/agents.py) (with a positive value, the program will subtract that value). The idea is to encourage the agent to perform principally moves that lead to a merge of tiles, and not moves that simply shift the tiles without any merge; moreover, we forced the model to reach tiles with higher values by adding a **reward per action** when we reach values greater or equal to 512, in particular for each step, we reward the agent with an additional value of num_tiles==512 + 2.5*num_tiles==1024 + 6*num_tiles==2048.
 
-Note that due to the fact that at each step the agent can only perform a valid move, and after every move a new tile is added to the board, the existence of a terminal state is guaranteed, so considering a 0 value for penalty is not a problem.
+Note that due to the fact that at each step the agent can only perform a valid move, and after every move, a new tile is added to the board, the existence of a terminal state is guaranteed, so considering a 0 value for penalty is not a problem.
 
 ## Solving the problem
 
 ### Model-based or model-free?
 
-The problem is so complex that we can state we have no a priori knowledge of the transition probabilities $p(s'|s,a)$, which make unfeasible computing also the expected reward $\mathbb{E}[r|s,a] = \sum_{s'} p(s'|s,a) r(s,a,s')$.
+The problem is so complex that we can state we have no a priori knowledge of the transition probabilities $p(s'|s, a)$, which makes unfeasible computing also the expected reward $\mathbb{E}[r|s, a] = \sum_{s'} p(s'|s, a) r(s, a, s')$.
 
 For this reason, the choice was to use a model-free approach, where the agent learns the optimal policy $\pi^*$ by interacting with the environment and observing the rewards obtained. In this setting, for each episode, there will be generated a sequence of states, actions, and rewards $S_0,\ A_0,\ R_1,\ S_1,\ A_1,\ \dots$, 
 
@@ -84,7 +84,7 @@ $$Q^{(\pi)}  =   \ E_{\pi} \left(R_t \vert s_t = s,\ a_t = a \right)$$
 
 $$Q^{(\pi)} =  \ \sum_{s'} p(s'|s,a) \left( r(s,a,s') + \gamma \max_{a'} \pi(a'|s') Q^{(\pi)}(s',a') \right)$$
 
-Where $\gamma$ is the discount factor tha encodes the time horizon of the problem.
+Where $\gamma$ is the discount factor that encodes the time horizon of the problem.
 
 
 There are more possible choices: *TD(0)*, TD($\lambda$), and *Monte Carlo* method. We have decided to implement a TD(0) algorithm, which is the simplest one and the most cheap in terms of computational cost.
@@ -100,10 +100,10 @@ To compute the *temporal difference error* $\delta(S,\ A,\ R, S')$ we have used 
 
 ### DQN: A Q-learning approach with neural networks
 
-In traditional Q-leaning, the action-value function $Q(s,a)$ is represented as a table, where each row is a state $s$ and each column is an action $a$. The Q-function then is a function $Q: S \times A \rightarrow \mathbb{R}$, which is represented as a matrix $Q \in \mathbb{R}^{|S| \times |A|}$.
+In traditional Q-leaning, the action-value function $Q(s, a)$ is represented as a table, where each row is a state $s$ and each column is an action $a$. The Q-function then is a function $Q: S \times A \rightarrow \mathbb{R}$, which is represented as a matrix $Q \in \mathbb{R}^{|S| \times |A|}$.
 
-However as we already said, the state space $S$ is huge (upper bounded by $12^{16}$), this make unfeasible the use of a table to represent the Q-function (for both memory and computational reasons). To solve this problem we have used a neural network (which is a universal function approximation) to represent the Q-function.
-This approach is called **Deep Q-Network** (DQN), and changes a little bit the setting of the problem: we have a neural network  $Q: S \to \mathbb{R}^{|A|}$, which takes as input a state $s$ and outputs a vector of size $|A|$.
+However, as we already said, the state space $S$ is huge (upper bounded by $12^{16}$), this makes unfeasible the use of a table to represent the Q-function (for both memory and computational reasons). To solve this problem we have used a neural network (which is a universal function approximation) to represent the Q-function.
+This approach is called **Deep Q-Network** (DQN), and changes a little bit the setting of problem: we have a neural network  $Q: S \to \mathbb{R}^{|A|}$, which takes as input a state $s$ and outputs a vector of size $|A|$.
 
 ![Difference between Q-Learning and DQN](./images/DQN-explain.png)*Fig. 4: Difference between traditional Q-learning approach and DQN*
 
@@ -114,7 +114,7 @@ Then the action $a$ is chosen as $\arg\max_{a} Q(s,a)$, which is the index of th
 
 Where $\theta$ are the parameters of the neural network $Q(s,\theta)$, and $\theta'$ are the parameters of a second neural network $Q(s,\theta')$ which is used to compute the target $y$.
 
-Usually the TD-learning algorithms are defined considering the *eligibility traces* $e(s,a)$. In this case instead, we have used the *loss* $\mathcal{L}(s,a)$ instead, which is defined as
+Usually, the TD-learning algorithms are defined considering the *eligibility traces* $e(s, a)$. In this case instead, we have used the *loss* $\mathcal{L}(s,a)$ instead, which is defined as
 
 $$\mathcal{L}(\delta) = \mathcal{L}^{Huber}(\delta(\theta)) + \mathcal{L}^{L2}(\theta)
 $$
@@ -136,7 +136,7 @@ $$
 
 
 As written in the algorithm, the agent will take an action with an $\epsilon$-greedy policy, which means that with probability $\epsilon$ it will take a random action, otherwise. The value of $\epsilon$ will decrease over time, in order to make the agent explore the environment at the beginning and exploit the knowledge it has learned later.
-Tuning the decay of $\epsilon$ can affect the overall results, for this reason many different strategies have been proposed. We have decide to implement the following one:
+Tuning the decay of $\epsilon$ can affect the overall results, for this reason, many different strategies have been proposed. We have decided to implement the following:
 
 - Lai and Robbins: $\epsilon(t(a)) = \frac{\eta}{1+\nu t(a)}$, where $\eta$ and $\nu$ are 0.8 and 0.01 respectively, and $t(a)$ is the number of times the action $a$ has been taken.
 - Entropy: $\epsilon$ is computed as the softmax of the scalar product between the valid values of the policy, and $\beta(a) = alpha\cdot \log(t(a)+1)$, where $\alpha$ is 1.
@@ -189,29 +189,29 @@ For what concern the [`agents.py`](modules/agents.py) module, it contains the im
 
 - `DQN_Agent` and `ConvDQN_Agent`: they are the agents that implement the DQN algorithm. The first one uses a fully connected neural network, while the second one uses a convolutional neural network. The two agents have the same attributes and methods, the only difference is in the neural network used.
 
-THe attributes of the `DQN_Agent` and `ConvDQN_Agent` classes are the following:
+The attributes of the `DQN_Agent` and `ConvDQN_Agent` classes are the following:
 
 
-| Atttribute           | Description                                                                                                                                                |
+| Attribute           | Description                                                                                                                                                |
 |----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `model`              | the model used as policy network. It must be a model of the [`architectures`](modules/architectures.py) or more in general a sub-class of `torch.nn.Module` |
-| `device`             | the device used to computation (cuda or cpu).                                                                                                              |
+| `model`              | the model used as a policy network. It must be a model of the [`architectures`](modules/architectures.py) or more in general a sub-class of `torch.nn.Module` |
+| `device`             | the device used for computation (cuda or cpu).                                                                                                              |
 | `bathc_size`         | the size of the batch used for training.                                                                                                                   |
 | `gamma`              | the discount factor of the algorithm.                                                                                                                      |
 | `eps_start`          | the starting value of epsilon.                                                                                                                             |
 | `eps_end`            | the ending value of epsilon.                                                                                                                               |
 | `eps_decay`          | the decay rate of epsilon.                                                                                                                                 |
-| `kind_epsg`          | the kind of decay of epsilon, it can be `lai_robbins`, `entropy` or `torch_version`.                                                                       |
+| `kind_epsg`          | the kind of decay of epsilon, it can be `lai_robbins`, `entropy`, or `torch_version`.                                                                       |
 | `tau`                | the parameter used for the soft update of the target network.                                                                                              |
 | `lr`                 | the learning rate of the optimizer.                                                                                                                        |
 | `replay_memory_size` | The maximum number of transitions to store in the replay buffer.                                                                                           |
 | `epochs_checkpoint`  | The number of epochs between two checkpoints (print of information during the training)                                                                    |
-| `penality_move`      | The penalty for each move, usable for reward shapeing                                                                                                      |
+| `penality_move`      | The penalty for each move, usable for reward shaping                                                                                                      |
 | `target_net`         | The target network used for the soft update.                                                                                                               |
 | `policy_net`         | The policy network used for the training.                                                                                                                  |
 | `loss_history`       | A list of the loss values obtained during the training.                                                                                                    |
 | `cumulative_reward`  | A list of the cumulative reward obtained during the training.                                                                                              |
-| `score`              | The score that the agent has achieve playing the game                                                                                                      |
+| `score`              | The score that the agent has achieved playing the game                                                                                                      |
 | `steps_done`           | The number of steps done by the agent                                                                                                                      |
 | `steps_done`           | The number of steps done by the agent                                                                                                                      |
 | `steps_per_action`           | array of size 4 containing the counting of all the  steps the agent did in the game in each direction                                                      |
@@ -229,6 +229,7 @@ The methods of the `DQN_Agent` and `ConvDQN_Agent` classes are the following:
 | `load(self, path)`                                                                                                                                                                                                         | loads the model from the path `path`                                                                                |
 | `binary_tensor(self, state)`                                                                                                                                                                                               | converts the state into a binary tensor with shape (12,4,4) to be used as input of the neural network               |
 | `fit(self, env, num_episodes)` | performs the training of the agent for `num_episodes`  |
+| `test(self, env, num_episodes)` | plays n_games='num_episodes` by following the learned policy | `
 
 
 
