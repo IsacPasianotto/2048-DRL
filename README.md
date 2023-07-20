@@ -232,11 +232,17 @@ The methods of the `DQN_Agent` and `ConvDQN_Agent` classes are the following:
 | `test(self, env, num_episodes)` | plays n_games='num_episodes` by following the learned policy | `
 
 
-
+### Results
+In this section, we sum up the results obtained by the different agents, in particular, we tried  different decay strategies for epsilon-greedy, different architectures, different reward shapings (you can find the plots Report.ipynb).
+#### Decay strategies
+The decay strategies we have tried are:
+1. Lai and Robbins, with $\epsilon{a} = \frac{\eta}{1+\nu t(a)}$, $\eta=0.8$ and $\nu=0.01$: this strategy shows some issues in the early stages of the training, in fact, the first move induces a strong bias on the policy (the first moves that are selected have a high probability of being reselected), which makes the agent learn slowly; after some episodes, the agent reach approximately a uniform distribution over the actions. By looking at the mean value of the tiles in the board the agents trained in this way prefer to keep the tiles with big values in the center of the board.
+2. Torch Version, with $\epsilon = \epsilon_{end} + (\epsilon_{start} - \epsilon_{end})\cdot e^{-\frac{n}{\epsilon{decay}}}$: this strategy is the one proposed in the Pytorch tutorial, it is the one that makes the agent learn faster, but it is also the one that makes the agent learn less. In fact, the agent trained in this way reaches a uniform distribution over the actions after few episodes, but it does not learn to keep the tiles with big values in the center of the board; moreover, with this strategy, we don't have the second criterion of convergence, because the asymptotic value of $\epsilon$ is a constant greater than 0.
+3. Entropy Regularization, with $\beta(a) = \alpha\log(t(a)+1)$, $alpha=1$: this strategy was the most interesting one for different aspects. In fact, it makes the agent learn better than the others, and the results obtained seems human-like. In this choice the agent chooses one random move (depending on the initial states in the training), and then forces an hierarchy over the other actions. In particular if the agent chooses "up" as main move in the early stage of the training, then it will prefer "left" or "right" as a second main move, and it will avoid "down" as much as possible. This is due to the fact that the agent learns to keep the tiles with big values in the corner of the board, and it learns to merge them, or to keep them near and merge them later. Finally, the distribution of the actions is strongly unbalanced, this can be a good thing because it means that the agent has learned to prefer some actions over the others.
 
 ## Demo
 
-You can use the [given notebook(./Report.ipynb) to play around with the environment and the agents.\
+You can use the [given notebook](./Report.ipynb) to play around with the environment and the agents.\
 The notebook contains examples of how to use the modules we implemented in order to train and test the agent. 
 
 Here a visual example about how the random and the DQN agent play the game:
