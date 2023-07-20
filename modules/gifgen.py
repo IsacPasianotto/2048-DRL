@@ -7,15 +7,17 @@ Please remember that duo to its nature, this module is not
 as well documented, tested and maintained as the other modules.
 """
 
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors
 import matplotlib.patches as patches
 import matplotlib.animation as animation
 import torch
-import modules.agents as agents
-import modules.envs as envs
-import modules.architectures as architectures
+import agents as agents
+import envs as envs
+import architectures as architectures
+import sys
 
 
 # Constants
@@ -169,6 +171,8 @@ def play_gameDQN (env, agent, verbose=False, gif=False, fname_gif="2048.gif", fp
     :param fps:     frames per second of the gif
     :return:   env.score, agent.cumreward
     """
+
+    print("Loading, please wait...")
     state, _ = env.reset()
     # state = torch.tensor(state. flatten(), dtype=torch.float32, device=agent.device).unsqueeze(0)
 
@@ -201,37 +205,48 @@ def play_gameDQN (env, agent, verbose=False, gif=False, fname_gif="2048.gif", fp
         # other possible writer:
         #ani.save(fname_gif, writer='imagemagick', fps=5)
         #ani.save(fname_gif, writer='pillow', fps=5)
+    
+    print("Finished!")
+    if gif:
+        print(f"Your gif is saved in {fname_gif}")
     if plot:
         plot_board(env, agent, to_save=True, last_action=action, fname=fname_plt)
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Play a game of 2048 with a given agent')
+    parser.add_argument('--version', type=str, default="entropy", help='Agent to play with (random, entropy, torch_version, lai_robbins)')
 
-# Random Agent
+    args = parser.parse_args()
 
-# env = envs.Game2048Env()
-# random_agent = agents.RandomAgent()
-# play_gameRA(env, random_agent, verbose=False, plot=True, fname_plt="2048.jpg", gif=True)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    env = envs.Game2048Env()
+    
+    sys.path.append('../')
 
-# DQN-agent with convolutional network
+    if args.version == "random":
+        random_agent = agents.RandomAgent()
+        play_gameRA(env, random_agent, verbose=False, plot=True, fname_plt="2048.jpg", gif=True)
 
-# env = envs.Game2048Env()
-# net = architectures.ConvolutionalNetwork()
-# agent = agents.ConvDQN_Agent(model=net)
-# agent.fit(num_episodes=2, env=env, verbose=True)
-# agent.load_model("path_to_model.pt")
-# play_gameDQN(env, agent, verbose=False, gif=True, fname_gif="2048.gif", fps=4.5, plot=True, fname_plt="2048.jpg")
+    if args.version == "entropy":
+        agent = agents.ConvDQN_Agent(model=architectures.BigConvolutionalNetwork(), device=device, kind_action="entropy")
+        agent.load("../trained_architectures/convdqn_agent_long_train.pt")
+        play_gameDQN(env, agent, verbose=False, gif=True, fname_gif="2048.gif", fps=4.5, plot=True, fname_plt="2048.jpg")
+    
+    elif args.version == "torch_version":
+        agent = agents.ConvDQN_Agent(model=architectures.BigConvolutionalNetwork(), device=device, kind_action="torch_version")
+        agent.load("../trained_architectures/convdqn_torch_300_net.pt")
+        # suppress the warnings, we don't need metrics in this case
+        import warnings
+        warnings.filterwarnings("ignore")
+        play_gameDQN(env, agent, verbose=False, gif=True, fname_gif="2048.gif", fps=4.5, plot=True, fname_plt="2048.jpg")
+    
+    elif args.version == "lai_robbins":
+        agent = agents.ConvDQN_Agent(model=architectures.BigConvolutionalNetwork(), device=device, kind_action="lai_robbins")
+        # suppress the warnings, we don't need metrics in this case
+        import warnings
+        warnings.filterwarnings("ignore")
+        agent.load("../trained_architectures/convdqn_agent_lairobbins_300.pt")
+        play_gameDQN(env, agent, verbose=False, gif=True, fname_gif="2048.gif", fps=4.5, plot=True, fname_plt="2048.jpg")
 
-
-# env = envs.Game2048Env()
-# random_agent = agents.RandomAgent()
-# play_gameRA(env, random_agent, verbose=False, plot=False, gif=True, fname_gif="2048_random_agent.gif")
-
-# env = envs.Game2048Env()
-# model = architectures.BigConvolutionalNetwork()
-# trained_agent = agents.ConvDQN_Agent(model=model)
-
-# import sys
-# sys.path.append('../')
-
-# trained_agent.load("trained_architectures/convdqn_agent_long_train.pt")
-
-# play_gameDQN(env, trained_agent, verbose=False, gif=True, fname_gif="2048_trained_agent.gif", fps=4.5)
+    else:
+        raise ValueError("Invalid agent version")
