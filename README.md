@@ -70,7 +70,13 @@ Note that due to the fact that at each step the agent can only perform a valid m
 
 ### Model-based or model-free?
 
-The problem is so complex that we can state we have no a priori knowledge of the transition probabilities $p(s'|s, a)$, which makes unfeasible computing also the expected reward $\mathbb{E}[r|s, a] = \sum_{s'} p(s'|s, a) r(s, a, s')$.
+Even if technically we could find the *transition probabilities* $p(s'|s,a)$,  in a model-base approach we would have to compute the *expected state-action value*:
+
+$$
+Q_{\pi}(s,a) =  \sum_{s'}p(s'|s,a)\left[r(s,a,s') + \gamma V_{\pi}(s')\right]
+$$
+
+which is not feasible for the huge state space $S$. 
 
 For this reason, the choice was to use a model-free approach, where the agent learns the optimal policy $\pi^*$ by interacting with the environment and observing the rewards obtained. In this setting, for each episode, there will be generated a sequence of states, actions, and rewards $S_0,\ A_0,\ R_1,\ S_1,\ A_1,\ \dots$, 
 
