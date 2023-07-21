@@ -10,7 +10,7 @@ format:
         transition: slide
         scrollable: true
         smaller: false
-        toc: true
+        toc: false
         slide-number: true
         self-contained: true
 ---
@@ -225,10 +225,13 @@ These combinations of rewards shaping are controlled by the `log_rewards` of the
 
 ## Model-based or model-free?
 
-- The problem is so complex that we can state we have no a-priori knowledge about the transition probabilities $p(s'|s,a)$
-- This makes unfeasible the computations of the expected reward
+- Even if technically we could find the *transition probabilities* $p(s'|s,a)$,  in a model-base approach we would have to compute the *expected state-action value*:
 
-$\mathbb{E}_{p(s'|s,a)}[r(s,a,s')] = \sum_{s'} p(s'|s,a) r(s,a,s')$
+$$
+Q_{\pi}(s,a) =  \sum_{s'}p(s'|s,a)\left[r(s,a,s') + \gamma V_{\pi}(s')\right]
+$$
+
+which is not feasible. 
 
 $\Rightarrow$ we have to use a **model-free** approach
 
